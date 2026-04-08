@@ -51,9 +51,17 @@ export const trackCommand: CommandHandler = {
     }
 
     let providerUserId: string;
+    let latestActivityId: string | undefined;
     try {
       const anilistProvider = new AniListProvider();
       providerUserId = await anilistProvider.resolveUserId(username);
+
+      // Fetch the user's latest activity so we only post NEW entries going forward
+      const recentActivities = await anilistProvider.fetchRecentActivities(providerUserId);
+      const latestActivity = recentActivities[0];
+      if (latestActivity) {
+        latestActivityId = latestActivity.providerActivityId;
+      }
     } catch (error) {
       logger.error("Failed to resolve AniList user:", error);
       await interaction.editReply(`❌ AniList user '${username}' not found.`);
@@ -94,6 +102,7 @@ export const trackCommand: CommandHandler = {
           providerType: "anilist",
           providerUserId,
           channelId: channel?.id,
+          lastSeenActivityId: latestActivityId,
         },
       );
     } catch (error) {

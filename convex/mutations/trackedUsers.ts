@@ -47,6 +47,7 @@ export const addTrackedUser = mutation({
     providerUserId: v.string(),
     channelId: v.optional(v.string()),
     activityFilter: v.optional(activityFilterValidator),
+    lastSeenActivityId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const existing = await ctx.db
@@ -72,6 +73,7 @@ export const addTrackedUser = mutation({
       providerUserId: args.providerUserId,
       channelId: args.channelId,
       activityFilter: args.activityFilter,
+      lastSeenActivityId: args.lastSeenActivityId,
       addedAt: Date.now(),
     });
   },
