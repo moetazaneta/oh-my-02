@@ -1,0 +1,25 @@
+{
+  "name": "discord-activity-bot",
+  "version": "0.1.0",
+  "description": "Activity polling bot for Discord using Convex backend",
+  "type": "module",
+  "main": "src/bot.ts",
+  "scripts": {
+    "bot": "bun src/bot.ts",
+    "test": "bun test",
+    "lint": "bunx oxlint .",
+    "format": "bunx oxfmt .",
+    "typecheck": "bunx tsc --noEmit"
+  },
+  "dependencies": {
+    "convex": "^1.0.0",
+    "discord.js": "^14.0.0",
+    "zod": "^3.0.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.0.0",
+    "@types/node": "^20.0.0",
+    "bun-types": "latest",
+    "typescript": "^5.0.0"
+  }
+}
