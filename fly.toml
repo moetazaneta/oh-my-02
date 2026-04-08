@@ -1,0 +1,11 @@
+app = 'oh-my-02'
+primary_region = 'fra'
+
+[build]
+
+[[vm]]
+  memory = '256mb'
+  cpu_kind = 'shared'
+  cpus = 1
+
+# No [http_service] — this is a background worker, not a web server
