@@ -2,9 +2,15 @@ import { EmbedBuilder } from "discord.js";
 import type { UnifiedActivity } from "../../types/activity.js";
 
 export function createActivityEmbed(activity: UnifiedActivity): EmbedBuilder {
-  const embed = new EmbedBuilder()
-    .setColor(getEmbedColor(activity))
-    .setTimestamp(activity.occurredAt);
+  const embed = new EmbedBuilder().setColor(getEmbedColor(activity));
+
+  if (activity.providerUserName) {
+    embed.setAuthor(
+      activity.providerUserAvatarUrl
+        ? { name: activity.providerUserName, iconURL: activity.providerUserAvatarUrl }
+        : { name: activity.providerUserName },
+    );
+  }
 
   if (activity.mediaCoverUrl) {
     embed.setThumbnail(activity.mediaCoverUrl);
@@ -32,50 +38,41 @@ function getEmbedColor(activity: UnifiedActivity): number {
 }
 
 function buildProgressEmbed(embed: EmbedBuilder, activity: UnifiedActivity): EmbedBuilder {
-  const title = activity.mediaTitle;
-  const progressText = activity.progressMax
-    ? `${activity.progress} / ${activity.progressMax}`
-    : `${activity.progress}`;
+  const statusLabel = activity.rawStatusLabel ?? "watched episode";
+  const displayText = activity.rawProgress
+    ? `${capitalize(statusLabel)} ${activity.rawProgress}`
+    : capitalize(statusLabel);
 
-  const unit = activity.mediaType === "ANIME" ? "Episode" : "Chapter";
-
-  embed.setTitle(title);
-  embed.setDescription(`Watched ${unit} ${progressText}`);
+  embed.setTitle(activity.mediaTitle);
+  embed.setDescription(displayText);
 
   if (activity.mediaUrl) {
     embed.setURL(activity.mediaUrl);
   }
-
-  embed.setFooter({ text: `${activity.providerType} • ${activity.mediaType}` });
 
   return embed;
 }
 
 function buildStatusChangeEmbed(embed: EmbedBuilder, activity: UnifiedActivity): EmbedBuilder {
-  const statusEmoji = getStatusEmoji(activity.status);
-  const statusText = formatStatus(activity.status);
+  const statusLabel = activity.rawStatusLabel ?? formatStatusFallback(activity.status);
 
   embed.setTitle(activity.mediaTitle);
-  embed.setDescription(`${statusEmoji} Status changed to **${statusText}**`);
+  embed.setDescription(capitalize(statusLabel));
 
   if (activity.mediaUrl) {
     embed.setURL(activity.mediaUrl);
   }
-
-  embed.setFooter({ text: `${activity.providerType} • ${activity.mediaType}` });
 
   return embed;
 }
 
 function buildScoreEmbed(embed: EmbedBuilder, activity: UnifiedActivity): EmbedBuilder {
   embed.setTitle(activity.mediaTitle);
-  embed.setDescription(`⭐ Rated **${activity.score}/10**`);
+  embed.setDescription(`Rated **${activity.score}/10**`);
 
   if (activity.mediaUrl) {
     embed.setURL(activity.mediaUrl);
   }
-
-  embed.setFooter({ text: `${activity.providerType} • ${activity.mediaType}` });
 
   return embed;
 }
@@ -87,45 +84,29 @@ function buildTextEmbed(embed: EmbedBuilder, activity: UnifiedActivity): EmbedBu
     embed.setURL(activity.activityUrl);
   }
 
-  embed.setFooter({ text: activity.providerType });
-
   return embed;
 }
 
-function getStatusEmoji(status?: string): string {
-  switch (status) {
-    case "CURRENT":
-      return "▶️";
-    case "COMPLETED":
-      return "✅";
-    case "PAUSED":
-      return "⏸️";
-    case "DROPPED":
-      return "❌";
-    case "PLANNING":
-      return "📝";
-    case "REPEATING":
-      return "🔁";
-    default:
-      return "📊";
-  }
+function capitalize(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-function formatStatus(status?: string): string {
+/** Fallback status text when rawStatusLabel is unavailable */
+function formatStatusFallback(status?: string): string {
   switch (status) {
     case "CURRENT":
-      return "Watching";
+      return "watching";
     case "COMPLETED":
-      return "Completed";
+      return "completed";
     case "PAUSED":
-      return "Paused";
+      return "paused";
     case "DROPPED":
-      return "Dropped";
+      return "dropped";
     case "PLANNING":
-      return "Planning";
+      return "plans to watch";
     case "REPEATING":
-      return "Rewatching";
+      return "rewatching";
     default:
-      return "Unknown";
+      return "unknown";
   }
 }

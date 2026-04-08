@@ -93,9 +93,17 @@ export const pollUser = internalAction({
       let newestActivityId = trackedUser.lastSeenActivityId;
 
       for (const activity of reversed) {
+        // Strip display-only fields before persisting to DB
+        const {
+          rawStatusLabel: _rawStatus,
+          rawProgress: _rawProgress,
+          providerUserName: _userName,
+          providerUserAvatarUrl: _userAvatar,
+          ...dbActivity
+        } = activity;
         const activityId = await ctx.runMutation(
           internal.mutations.activities.upsertActivity,
-          activity,
+          dbActivity,
         );
 
         await ctx.runMutation(internal.mutations.anilistRawActivities.insertRawActivity, {
@@ -131,44 +139,7 @@ export const pollUser = internalAction({
           continue;
         }
 
-        let memberName: string | undefined;
-        let memberAvatarUrl: string | undefined;
-        if (trackedUser.discordUserId) {
-          try {
-            const memberRes = await fetch(
-              `https://discord.com/api/v10/guilds/${guild.guildId}/members/${trackedUser.discordUserId}`,
-              {
-                headers: { Authorization: `Bot ${botToken}` },
-              },
-            );
-            if (memberRes.ok) {
-              const member = (await memberRes.json()) as {
-                nick?: string;
-                avatar?: string;
-                user?: { id?: string; username?: string; avatar?: string };
-              };
-              memberName = member.nick ?? member.user?.username;
-              const avatarHash = member.avatar ?? member.user?.avatar;
-              if (avatarHash && member.user?.id) {
-                memberAvatarUrl = member.avatar
-                  ? `https://cdn.discordapp.com/guilds/${guild.guildId}/users/${member.user.id}/avatars/${member.avatar}.webp`
-                  : `https://cdn.discordapp.com/avatars/${member.user.id}/${avatarHash}.webp`;
-              }
-            }
-          } catch (error) {
-            console.warn(
-              `[pollUser] Failed to fetch member info for user ${trackedUser.discordUserId}:`,
-              error,
-            );
-          }
-        }
-
         const embed = createActivityEmbed(activity);
-        if (memberName) {
-          embed.setAuthor(
-            memberAvatarUrl ? { name: memberName, iconURL: memberAvatarUrl } : { name: memberName },
-          );
-        }
 
         const postUrl = `https://discord.com/api/v10/channels/${channelId}/messages`;
         let postRes = await fetch(postUrl, {

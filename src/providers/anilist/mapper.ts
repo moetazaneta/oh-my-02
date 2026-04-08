@@ -26,7 +26,7 @@ export function mapAniListActivityToUnified(
   raw: AniListListActivityFragment | AniListTextActivityFragment,
 ): UnifiedActivity {
   if (raw.__typename === "ListActivity") {
-    const progressNum = raw.progress !== null ? Number(raw.progress) : 0;
+    const progressNum = parseProgressNumber(raw.progress);
     return {
       providerType: "anilist",
       providerUserId: raw.user.id.toString(),
@@ -39,12 +39,16 @@ export function mapAniListActivityToUnified(
       mediaUrl: raw.media.siteUrl,
       activityUrl: `https://anilist.co/activity/${raw.id}`,
       status: parseStatusLabel(raw.status),
-      progress: progressNum > 0 ? progressNum : undefined,
+      progress: progressNum,
       progressMax:
         raw.media.type === "ANIME"
           ? (raw.media.episodes ?? undefined)
           : (raw.media.chapters ?? undefined),
       occurredAt: raw.createdAt * 1000,
+      rawStatusLabel: raw.status,
+      rawProgress: raw.progress ?? undefined,
+      providerUserName: raw.user.name,
+      providerUserAvatarUrl: raw.user.avatar.large,
     };
   }
 
@@ -58,7 +62,28 @@ export function mapAniListActivityToUnified(
     text: raw.text,
     activityUrl: `https://anilist.co/activity/${raw.id}`,
     occurredAt: raw.createdAt * 1000,
+    providerUserName: raw.user.name,
+    providerUserAvatarUrl: raw.user.avatar.large,
   };
+}
+
+/**
+ * Parse progress string to a number.
+ * Handles single values ("11") and ranges ("10 - 11") by taking the last number.
+ */
+function parseProgressNumber(raw: string | null): number | undefined {
+  if (raw === null) return undefined;
+  const trimmed = raw.trim();
+  if (!trimmed) return undefined;
+
+  // Handle range format like "10 - 11" → take the last number
+  const rangeMatch = trimmed.match(/(\d+)\s*-\s*(\d+)/);
+  if (rangeMatch) {
+    return Number(rangeMatch[2]);
+  }
+
+  const num = Number(trimmed);
+  return Number.isNaN(num) || num <= 0 ? undefined : num;
 }
 
 function determineActivityType(statusLabel: string): ActivityType {

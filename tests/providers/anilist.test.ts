@@ -155,6 +155,42 @@ describe("AniList Mapper", () => {
       expect(result.progress).toBe(12);
     });
 
+    it("should handle range progress like '10 - 11' without undefined", () => {
+      const mockListActivity: AniListListActivityFragment = {
+        __typename: "ListActivity",
+        id: 77777,
+        type: "ANIME_LIST",
+        status: "watched episode",
+        progress: "10 - 11",
+        createdAt: 1234567890,
+        media: {
+          id: 5,
+          type: "ANIME",
+          title: {
+            romaji: "Range Anime",
+            english: "Range Anime EN",
+            native: "レンジ",
+          },
+          coverImage: { large: "https://example.com/range.jpg" },
+          siteUrl: "https://anilist.co/anime/5",
+          episodes: 23,
+          chapters: null,
+        },
+        user: {
+          id: 555,
+          name: "rangewatcher",
+          avatar: { large: "https://example.com/avatar5.jpg" },
+          siteUrl: "https://anilist.co/user/rangewatcher",
+        },
+      };
+
+      const result = mapAniListActivityToUnified(mockListActivity);
+
+      expect(result.progress).toBe(11);
+      expect(result.rawProgress).toBe("10 - 11");
+      expect(result.rawStatusLabel).toBe("watched episode");
+    });
+
     it("should map status_change activity when progress is null", () => {
       const mockListActivity: AniListListActivityFragment = {
         __typename: "ListActivity",

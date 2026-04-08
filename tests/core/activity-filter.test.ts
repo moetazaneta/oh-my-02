@@ -8,7 +8,7 @@ import type { UnifiedActivity } from "../../src/types/activity.js";
 
 describe("ActivityFilter", () => {
   describe("DEFAULT_ACTIVITY_FILTER", () => {
-    it("should filter out PLANNING status by default", () => {
+    it("should allow PLANNING status by default", () => {
       const activity: UnifiedActivity = {
         providerType: "anilist",
         providerUserId: "user123",
@@ -21,7 +21,7 @@ describe("ActivityFilter", () => {
       };
 
       const shouldPost = shouldPostActivity(activity, DEFAULT_ACTIVITY_FILTER);
-      expect(shouldPost).toBe(false);
+      expect(shouldPost).toBe(true);
     });
   });
 

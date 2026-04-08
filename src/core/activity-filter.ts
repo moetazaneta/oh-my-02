@@ -14,10 +14,8 @@ export const ActivityFilterSchema = z.object({
 
 export type ActivityFilter = z.infer<typeof ActivityFilterSchema>;
 
-// Default bot-wide filter: ignore PLANNING status by default
-export const DEFAULT_ACTIVITY_FILTER: ActivityFilter = {
-  ignoredMediaStatuses: ["PLANNING"],
-};
+// Default bot-wide filter: show all statuses including PLANNING
+export const DEFAULT_ACTIVITY_FILTER: ActivityFilter = {};
 
 // Merge: user > guild > bot default (later overrides earlier, but undefined = inherit)
 export function mergeFilters(

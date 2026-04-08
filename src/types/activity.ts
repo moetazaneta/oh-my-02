@@ -18,4 +18,10 @@ export interface UnifiedActivity {
   score?: number; // 0–10 or provider scale
   text?: string; // for text activities
   occurredAt: number; // Unix timestamp ms from provider
+
+  // Display-only fields (not persisted to DB)
+  rawStatusLabel?: string; // raw AniList status label ("watched episode", "completed", etc.)
+  rawProgress?: string; // raw progress string from AniList ("11", "10 - 11", etc.)
+  providerUserName?: string; // AniList username
+  providerUserAvatarUrl?: string; // AniList user avatar URL
 }
