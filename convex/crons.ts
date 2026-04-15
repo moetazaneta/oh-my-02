@@ -1,7 +1,7 @@
 import { cronJobs } from "convex/server";
 import { internal } from "./_generated/api";
 
-const POLL_INTERVAL_SECONDS = Number(process.env.POLL_INTERVAL_SECONDS) || 10;
+const POLL_INTERVAL_SECONDS = Number(process.env.POLL_INTERVAL_SECONDS) || 300;
 
 const crons = cronJobs();
 
